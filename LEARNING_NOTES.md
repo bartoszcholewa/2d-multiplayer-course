@@ -33,9 +33,9 @@ func _ready() -> void:
 	# Edytor podpowiada argumenty i nazwę.
 	# Kliknięcie F2 na 'leveled_up' zmieni nazwę również tutaj.
 	leveled_up.emit(5)
-	
+
 	# --- SPOSÓB LEGACY / DYNAMICZNY ---
-	# Podatne na literówki. Używaj TYLKO, jeśli nazwa sygnału 
+	# Podatne na literówki. Używaj TYLKO, jeśli nazwa sygnału
 	# jest generowana dynamicznie w zmiennej typu String.
 	emit_signal("leveled_up", 5)
 ```
@@ -62,17 +62,17 @@ Najważniejsza metoda to `.tween_property(obiekt, "właściwość", wartość_ko
 func animate_damage_flash() -> void:
 	# 1. Tworzymy tween
 	var tween = create_tween()
-	
+
 	# 2. Konfigurujemy (opcjonalnie) - np. ustawiamy, żeby animacje szły równolegle
 	# domyślnie tweeny wykonują się sekwencyjnie (jeden po drugim)
-	# tween.set_parallel() 
-	
+	# tween.set_parallel()
+
 	# 3. Definiujemy akcję: Zmień kolor modulacji na Czerwony w 0.2 sekundy
 	tween.tween_property(self, "modulate", Color.RED, 0.2)		.set_ease(Tween.EASE_IN)		.set_trans(Tween.TRANS_CUBIC)
-	
+
 	# 4. Łańcuchowanie: Po zakończeniu powyższego, wróć do Białego
 	tween.tween_property(self, "modulate", Color.WHITE, 0.2)
-	
+
 	# 5. Callback: Po zakończeniu wszystkiego wywołaj funkcję (np. usuń obiekt)
 	# tween.tween_callback(queue_free)
 ```
