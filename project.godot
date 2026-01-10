@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="2DMultiplayerCource"
-run/main_scene="uid://ej1u6umes6d5"
+run/main_scene="uid://c7kxd6jegwvb3"
 config/features=PackedStringArray("4.5", "Forward Plus")
 config/icon="res://icon.svg"
 
@@ -38,7 +38,6 @@ gdscript/warnings/unsafe_property_access=1
 gdscript/warnings/unsafe_method_access=1
 gdscript/warnings/unsafe_cast=1
 gdscript/warnings/unsafe_call_argument=1
-gdscript/warnings/return_value_discarded=1
 
 [editor]
 
