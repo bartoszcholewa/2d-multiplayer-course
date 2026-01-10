@@ -1,13 +1,10 @@
 extends Node
 
-var test: String = "test"
-
 func _ready() -> void:
-	var a: int = my_func(5)
-	if a == 5:
-		print(test)
 
+	# Notify server about client ready
+	peer_ready.rpc_id(1)
 
-
-func my_func(my_test: int) -> int:
-	return 0 + my_test
+@rpc("any_peer", "call_local", "reliable")
+func peer_ready() -> void:
+	print("peer %s ready" % multiplayer.get_remote_sender_id())
