@@ -47,38 +47,25 @@ When providing or reviewing code, adhere to this structure:
 - Refactoring from "monolithic" scripts to modular Components.
 
 ## Project Overview
-This is a 2D "Survivors-like" game built with Godot 4. The project focuses on a survival arena mechanic where the player fights waves of enemies, collects experience, and upgrades abilities. Despite the folder name `3d-survivors-cousce`, the configuration confirms it is a 2D project.
-This directory serves as the root workspace for the user's journey in learning the Godot Engine. 
-The user is currently following a Udemy course called `Create a Complete 2D Survivors Style Game in Godot 4` (https://www.udemy.com/course/create-a-complete-2d-arena-survival-roguelike-game-in-godot-4) to learn 2D game development, with a background as a Senior Python Developer.
+UNKNOWN
 
 ## Key Technologies
 *   **Engine:** Godot 4.5.1 (stable) (Forward Plus renderer)
 *   **Language:** GDScript
-*   **Resolution:** 640x360 (Pixel Art style), scaled to 1280x720 window.
 
 ## Architecture
 
 ### 1. Composition Pattern
-The project heavily utilizes **Composition over Inheritance**. Entities (Player, Enemies) are built using reusable components found in `scenes/component/`.
-*   **HealthComponent:** Manages health, damage, and death signals.
-*   **DeathComponent:** Handles logic when an entity dies.
-*   **VelocityComponent:** Likely handles movement physics.
-*   **Hitbox/Hurtbox Components:** Manage collision interactions.
+UNKNOWN
 
 ### 2. Managers
-Game logic is centralized in manager nodes (mostly in `scenes/manager/`):
-*   **UpgradeManager:** Handles the pool of available upgrades, randomized selection (`WeightedTable`), and applying upgrades to the player.
-*   **ExperienceManager:** Tracks XP and leveling up.
-*   **ArenaTimeManager:** Tracks survival time and likely enemy spawn waves.
-*   **EnemyManager:** Spawns enemies.
+UNKNOWN
 
 ### 3. Event System
-*   **GameEvents (Autoload):** A singleton (`scenes/autoload/game_events.gd`) serves as a global event bus.
-    *   Signals: `experience_vial_collected`, `ability_upgrade_added`.
-    *   This decouples game objects (like vials) from UI or Managers.
+UNKNOWN
 
 ### 4. Resources
-*   **AbilityUpgrade:** Custom resources (likely `extends Resource`) are used to define upgrades (e.g., `axe.tres`, `sword_rate.tres`). This allows data-driven design for abilities.
+UNKNOWN
 
 ## Development Conventions
 
@@ -88,14 +75,7 @@ Game logic is centralized in manager nodes (mostly in `scenes/manager/`):
 *   **Variables/Functions:** `snake_case`.
 
 ### Structure
-*   `scenes/`: Contains all scene files (`.tscn`) and their specific scripts.
-    *   `ability/`: Ability logic and controllers.
-    *   `component/`: Reusable components.
-    *   `game_object/`: Entities (Player, Enemies, Pickups).
-    *   `manager/`: Game logic managers.
-    *   `ui/`: User Interface elements.
-*   `resources/`: Custom resources (Stats, Upgrades, Themes).
-*   `assets/`: Raw assets (PNGs, Fonts).
+UNKNOWN
 
 ## Build & Run
 *   **Run Game:** Press F5 or use the "Play" button in Godot Editor.
