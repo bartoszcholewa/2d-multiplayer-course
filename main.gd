@@ -10,9 +10,11 @@ func _ready() -> void:
 	peer_ready.rpc_id(1)
 
 
-func _spawn_player(data: Dictionary) -> CharacterBody2D:
-	var player_instance: CharacterBody2D = PLAYER_SCENE.instantiate()
-	player_instance.name = str(data.peer_id)
+func _spawn_player(data: Dictionary) -> Player:
+	var player_instance: Player = PLAYER_SCENE.instantiate()
+	var peer_id: int = data["peer_id"]
+	player_instance.name = str(peer_id)
+	player_instance.input_multiplayer_authority = peer_id
 	return player_instance
 
 @rpc("any_peer", "call_local", "reliable")

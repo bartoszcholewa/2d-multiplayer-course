@@ -103,7 +103,7 @@ Znak dolara to skrót od funkcji `get_node()`. Pozwala na pobranie węzła na po
 Znak procenta odwołuje się do węzła oznaczonego w edytorze jako **"Access as Unique Name"** (Prawy Przycisk Myszy na węźle -> zaznacz tę opcję). Obok węzła pojawi się wtedy mała ikona `%`.
 *   Działa jak **ID w HTML**.
 *   Wyszukuje węzeł w obrębie obecnej sceny bez względu na to, jak głęboko jest schowany.
-*   **Zaleta:** Możesz dowolnie zmieniać strukturę sceny, a kod nadal będzie działał, dopóki węzeł znajduje się w tej samej scenie.
+*   **Zaleta:** Możecz dowolnie zmieniać strukturę sceny, a kod nadal będzie działał, dopóki węzeł znajduje się w tej samej scenie.
 
 ### 3. Zapis `$%`
 Łączy oba symbole: `$%MyLabel` to skrót od `get_node("%MyLabel")`. Jest to "Złoty Standard" przy pracy z UI, gdzie hierarchia często się zmienia.
@@ -113,3 +113,31 @@ Znak procenta odwołuje się do węzła oznaczonego w edytorze jako **"Access as
 *   `%UniqueNode` to jak szukanie po kluczu w płaskiej mapie ID: `global_registry['Label']`.
 
 **Dobra Praktyka:** Używaj `%UniqueName` dla wszystkich elementów UI, do których odwołujesz się w skryptach. Dzięki temu Twój kod będzie odporny na refaktoryzację wizualną sceny.
+
+## Temat: Kontenery danych - Inner Class vs Dictionary vs Resource
+**Pytanie:** Czy lepiej używać Inner Class czy Dictionary do trzymania danych? I dlaczego Inner Class wywala błąd w sieci (MultiplayerSpawner)?
+
+**Odpowiedź:**
+Wybór zależy od przeznaczenia danych. **Inner Class** jest świetna do lokalnej logiki, ale **zawodzi w systemach sieciowych** Godota (RPC, MultiplayerSpawner).
+
+### 1. Inner Class (Lokalny Kontener)
+Zalety: Static typing, autocomplete, łatwy refaktoring.
+**Kiedy używać:** Do wewnętrznej logiki skryptu (np. stan algorytmu, lokalne statystyki), które nie opuszczają danego obiektu.
+
+### 2. Dictionary (Transport Sieciowy)
+Zalety: Natywna serializacja. Godot wie, jak zamienić `Dictionary` na bajty i wysłać je przez sieć.
+**Kiedy używać:** W systemach sieciowych (np. `multiplayer_spawner.spawn(data)`), przy parsowaniu JSON lub szybkich prototypach.
+
+### 3. Resource (Złożone Dane & Inspektor)
+Zalety: Serializacja + widoczność w Inspektorze + zapis do pliku `.tres`.
+**Kiedy używać:** Gdy chcesz przesyłać złożone obiekty przez sieć (musi to być `class_name` w osobnym pliku) lub konfigurować dane w edytorze.
+
+### Dlaczego Inner Class nie działa w sieci?
+System sieciowy Godota operuje na typach **Variant**. `Inner Class` to niestandardowy obiekt (Object/RefCounted), którego silnik nie potrafi automatycznie zserializować "po kablu". Próba przesłania instancji Inner Class skończy się błędem `Failed to call spawn function` lub odebraniem `null`.
+
+### Pythonowa Analogia
+*   **Dictionary** jest jak surowy `dict`.
+*   **Inner Class** jest jak lokalna klasa zdefiniowana wewnątrz funkcji/modułu.
+*   **Resource** jest jak `dataclass` lub model `Pydantic`, który ma wbudowane metody `to_json()` / `from_json()`.
+
+**Zasada kciuka:** Jeśli dane idą do `rpc()` lub `spawn()`, użyj `Dictionary` (dla prostych danych) lub `Resource` (dla złożonych). Unikaj `Inner Class` w komunikacji między-węzłowej.

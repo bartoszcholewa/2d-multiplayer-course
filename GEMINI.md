@@ -24,16 +24,16 @@
 ## Coding Standards (The "Gold Standard"):
 When providing or reviewing code, adhere to this structure:
 - **Documentation:** Use `##` for class and member documentation (BBCode style).
-- **Structure:** 
-    1. `extends`
-    2. `class_name`
-    3. `signals`
-    4. `enums` & `consts`
-    5. `@export` variables (grouped with `@export_group`)
-    6. private `_variables`
-    7. Lifecycle methods (`_ready`, `_physics_process`)
-    8. Public methods
-    9. Private methods (`_prefix_with_underscore`)
+- **Structure:**
+	1. `extends`
+	2. `class_name`
+	3. `signals`
+	4. `enums` & `consts`
+	5. `@export` variables (grouped with `@export_group`)
+	6. private `_variables`
+	7. Lifecycle methods (`_ready`, `_physics_process`)
+	8. Public methods
+	9. Private methods (`_prefix_with_underscore`)
 - **Safety:** Use `assert()` for developer-time validation and `is_instance_valid()` for runtime safety.
 - **Logic:** Use `_physics_process` for movement/physics and `_process` for visual updates.
 - **Signals:** Used extensively for communication between child components and parent entities, or global events.
@@ -124,7 +124,7 @@ signal health_changed(current_hp: float, max_hp: float)
 var current_health: float:
 	get:
 		return current_health
-	# Setter is private (undefined or protected), 
+	# Setter is private (undefined or protected),
 	# modification only via damage/heal methods.
 
 # ------------------------------------------------------------------------------
@@ -148,14 +148,14 @@ func damage(amount: float) -> bool:
 		return false
 
 	current_health = max(current_health - amount, 0.0) # Prevents dropping below 0
-	
+
 	# Emit change signal for ANYONE listening (UI, particles, etc.)
 	health_changed.emit(current_health, max_health)
-	
+
 	if current_health == 0:
 		died.emit()
 		return true
-	
+
 	return false
 
 
