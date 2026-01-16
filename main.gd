@@ -1,6 +1,7 @@
 extends Node
 
 const PLAYER_SCENE: PackedScene = preload("uid://cse7rqp64wxuc")
+const ENEMY_SCENE: PackedScene = preload("uid://c7u2ej7yguwy6")
 
 @onready var multiplayer_spawner: MultiplayerSpawner = $MultiplayerSpawner
 
@@ -8,6 +9,12 @@ func _ready() -> void:
 	multiplayer_spawner.spawn_function = _spawn_player
 	# Notify server about client ready
 	peer_ready.rpc_id(1)
+
+	if is_multiplayer_authority():
+		var enemy_instance: Enemy = ENEMY_SCENE.instantiate()
+		enemy_instance.global_position = Vector2.ONE * 100
+		add_child(enemy_instance)
+
 
 
 func _spawn_player(data: Dictionary) -> Player:
