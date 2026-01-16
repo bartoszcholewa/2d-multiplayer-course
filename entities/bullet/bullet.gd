@@ -19,6 +19,9 @@ func start(bullet_direction: Vector2) -> void:
 	direction = bullet_direction
 	rotation = direction.angle()
 
+func register_collision() -> void:
+	queue_free()
+
 func _on_life_timer_timeout() -> void:
 	# Remove bullet node from server
 	if is_multiplayer_authority():
