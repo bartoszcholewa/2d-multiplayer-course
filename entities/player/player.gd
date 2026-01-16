@@ -13,10 +13,6 @@ func _ready() -> void:
 	player_input_synchronizer_component.set_multiplayer_authority(input_multiplayer_authority)
 
 
-func _input(event: InputEvent) -> void:
-	if event.is_action_pressed("attack"):
-		create_bullet()
-
 
 func _process(_delta: float) -> void:
 	# Rotate and point weapon at mouse position (aim_vector)
@@ -27,12 +23,15 @@ func _process(_delta: float) -> void:
 	if is_multiplayer_authority():
 		velocity = player_input_synchronizer_component.movement_vector * 100
 		move_and_slide()
+		if player_input_synchronizer_component.is_attack_pressed:
+			create_bullet()
 
 
 func create_bullet() -> void:
 	var bullet_instance: Bullet = BULLET_SCENE.instantiate()
 	bullet_instance.global_position = weapon_root.global_position
-	get_parent().add_child(bullet_instance)
 
 	var bullet_direction: Vector2 = player_input_synchronizer_component.aim_vector
 	bullet_instance.start(bullet_direction)
+
+	get_parent().add_child(bullet_instance, true)
