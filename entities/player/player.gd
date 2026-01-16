@@ -3,6 +3,7 @@ extends CharacterBody2D
 
 @onready var player_input_synchronizer_component: PlayerInputSynchronizerComponent = $PlayerInputSynchronizerComponent
 @onready var weapon_root: Node2D = $WeaponRoot
+@onready var fire_rate_timer: Timer = $FireRateTimer
 
 const BULLET_SCENE: PackedScene = preload("uid://ci3xnymrb32hv")
 
@@ -24,10 +25,13 @@ func _process(_delta: float) -> void:
 		velocity = player_input_synchronizer_component.movement_vector * 100
 		move_and_slide()
 		if player_input_synchronizer_component.is_attack_pressed:
-			create_bullet()
+			try_create_bullet()
 
 
-func create_bullet() -> void:
+func try_create_bullet() -> void:
+	if not fire_rate_timer.is_stopped():
+		return
+
 	var bullet_instance: Bullet = BULLET_SCENE.instantiate()
 	bullet_instance.global_position = weapon_root.global_position
 
@@ -35,3 +39,5 @@ func create_bullet() -> void:
 	bullet_instance.start(bullet_direction)
 
 	get_parent().add_child(bullet_instance, true)
+
+	fire_rate_timer.start()
