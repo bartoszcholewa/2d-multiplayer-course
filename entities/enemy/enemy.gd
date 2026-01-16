@@ -3,7 +3,7 @@ extends CharacterBody2D
 
 @onready var area_2d: Area2D = $Area2D
 
-var current_health: int = 5
+var current_health: int = 1
 
 
 func _ready() -> void:
