@@ -4,6 +4,7 @@ extends CharacterBody2D
 @onready var player_input_synchronizer_component: PlayerInputSynchronizerComponent = $PlayerInputSynchronizerComponent
 @onready var weapon_root: Node2D = $WeaponRoot
 @onready var fire_rate_timer: Timer = $FireRateTimer
+@onready var health_component: HealthComponent = $HealthComponent
 
 const BULLET_SCENE: PackedScene = preload("uid://ci3xnymrb32hv")
 
@@ -12,6 +13,7 @@ var input_multiplayer_authority: int
 func _ready() -> void:
 	# Set player authority as soon as node is ready
 	player_input_synchronizer_component.set_multiplayer_authority(input_multiplayer_authority)
+	health_component.died.connect(_on_died)
 
 
 
@@ -41,3 +43,7 @@ func try_create_bullet() -> void:
 	get_parent().add_child(bullet_instance, true)
 
 	fire_rate_timer.start()
+
+
+func _on_died() -> void:
+	print("player died")
