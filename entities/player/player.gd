@@ -6,6 +6,7 @@ extends CharacterBody2D
 @onready var fire_rate_timer: Timer = $FireRateTimer
 @onready var health_component: HealthComponent = $HealthComponent
 @onready var visuals: Node2D = $Visuals
+@onready var animation_player: AnimationPlayer = $AnimationPlayer
 
 const BULLET_SCENE: PackedScene = preload("uid://ci3xnymrb32hv")
 
@@ -26,7 +27,7 @@ func _process(_delta: float) -> void:
 		velocity = player_input_synchronizer_component.movement_vector * 100
 		move_and_slide()
 		if player_input_synchronizer_component.is_attack_pressed:
-			try_create_bullet()
+			try_fire()
 
 func update_aim_position() -> void:
 	# Rotate and point weapon at mouse position (aim_vector)
@@ -39,7 +40,7 @@ func update_aim_position() -> void:
 	weapon_root.look_at(aim_position)
 
 
-func try_create_bullet() -> void:
+func try_fire() -> void:
 	if not fire_rate_timer.is_stopped():
 		return
 
@@ -52,6 +53,10 @@ func try_create_bullet() -> void:
 	get_parent().add_child(bullet_instance, true)
 
 	fire_rate_timer.start()
+
+	if animation_player.is_playing():
+		animation_player.stop()
+	animation_player.play("fire")
 
 
 func _on_died() -> void:
