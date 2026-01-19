@@ -7,8 +7,13 @@ extends CharacterBody2D
 @onready var health_component: HealthComponent = $HealthComponent
 @onready var visuals: Node2D = $Visuals
 @onready var animation_player: AnimationPlayer = $AnimationPlayer
+@onready var barrel_position: Marker2D = %BarrelPosition
+@onready var shell_position: Marker2D = %ShellPosition
 
+const MUZZLE_FLASH_SCENE: PackedScene = preload("uid://c6m3fw1r3jknr")
 const BULLET_SCENE: PackedScene = preload("uid://ci3xnymrb32hv")
+const BULLET_SHELL_EFFECT_SCENE: PackedScene = preload("uid://tqaevjx7awih")
+
 
 var input_multiplayer_authority: int
 
@@ -45,7 +50,7 @@ func try_fire() -> void:
 		return
 
 	var bullet_instance: Bullet = BULLET_SCENE.instantiate()
-	bullet_instance.global_position = weapon_root.global_position
+	bullet_instance.global_position = barrel_position.global_position
 
 	var bullet_direction: Vector2 = player_input_synchronizer_component.aim_vector
 	bullet_instance.start(bullet_direction)
@@ -59,9 +64,22 @@ func try_fire() -> void:
 
 @rpc("authority", "call_local", "unreliable")
 func play_fire_effects() -> void:
+	var aim_vector: Vector2 = player_input_synchronizer_component.aim_vector
+
 	if animation_player.is_playing():
 		animation_player.stop()
 	animation_player.play("fire")
+
+	var muzzle_flash: GPUParticles2D = MUZZLE_FLASH_SCENE.instantiate()
+	muzzle_flash.global_position = barrel_position.global_position
+	muzzle_flash.rotation = barrel_position.global_rotation
+	get_parent().add_child(muzzle_flash, true)
+
+	var bullet_shell: Node2D = BULLET_SHELL_EFFECT_SCENE.instantiate()
+	bullet_shell.global_position = shell_position.global_position
+	bullet_shell.rotation = shell_position.global_rotation
+	bullet_shell.scale = Vector2.ONE if aim_vector.x >= 0 else Vector2(1, -1)
+	get_parent().add_child(bullet_shell)
 
 func _on_died() -> void:
 	print("player died")
