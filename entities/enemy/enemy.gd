@@ -7,11 +7,13 @@ extends CharacterBody2D
 @onready var attack_cooldown_timer: Timer = $AttackCooldownTimer
 @onready var charge_attack_timer: Timer = $ChargeAttackTimer
 @onready var hitbox_collision_shape: CollisionShape2D = %HitboxCollisionShape
+@onready var alert_sprite: Sprite2D = $AlertSprite
 
 var target_position: Vector2
 var state_machine: CallableStateMachine = CallableStateMachine.new()
 var default_collision_layer: int
 var default_collision_mask: int
+var alert_tween: Tween
 
 func _ready() -> void:
 
@@ -48,9 +50,11 @@ func _ready() -> void:
 	state_machine.set_initial_state(normal_state_spawn)
 	#endregion
 
+	# Initial visual setup
 	default_collision_layer = collision_layer
 	default_collision_mask = collision_mask
 	hitbox_collision_shape.disabled = true
+	alert_sprite.scale = Vector2.ZERO
 
 	if is_multiplayer_authority():
 		health_component.died.connect(_on_died)
@@ -108,8 +112,15 @@ func exit_state_follow() -> void:
 
 #region Charge Attack State
 func enter_state_charge_attack() -> void:
-	acquire_target()
-	charge_attack_timer.start()
+	if is_multiplayer_authority():
+		acquire_target()
+		charge_attack_timer.start()
+
+	_reset_aletr_tween()
+	alert_tween.tween_property(alert_sprite, "scale", Vector2.ONE, 0.2)\
+		.set_ease(Tween.EASE_OUT)\
+		.set_trans(Tween.TRANS_BACK)
+
 
 func normal_state_charge_attack() -> void:
 	if is_multiplayer_authority():
@@ -117,8 +128,12 @@ func normal_state_charge_attack() -> void:
 		if charge_attack_timer.is_stopped():
 			state_machine.change_state(normal_state_attack)
 
+
 func exit_state_charge_attack() -> void:
-	pass
+	_reset_aletr_tween()
+	alert_tween.tween_property(alert_sprite, "scale", Vector2.ZERO, 0.2)\
+		.set_ease(Tween.EASE_IN)\
+		.set_trans(Tween.TRANS_BACK)
 #endregion
 
 #region Attack State
@@ -143,9 +158,6 @@ func exit_state_attack() -> void:
 		attack_cooldown_timer.start()
 
 #endregion
-
-
-
 
 
 func flip() -> void:
@@ -177,3 +189,8 @@ func acquire_target() -> void:
 func _on_died() -> void:
 	GameEvents.emit_enemy_died()
 	queue_free()
+
+func _reset_aletr_tween() -> void:
+	if alert_tween and alert_tween.is_valid():
+		alert_tween.kill()
+	alert_tween = create_tween()

@@ -42,11 +42,9 @@ func _set_state(state_name: String) -> void:
 	if current_state:
 		var exit_callable: Callable = state_dictionary[current_state].exit
 		if !exit_callable.is_null():
-			print("Calling ", exit_callable.get_method())
 			exit_callable.call()
 
 	current_state = state_name
 	var enter_callable: Callable = state_dictionary[current_state].enter
 	if !enter_callable.is_null():
-		print("Calling ", enter_callable.get_method())
 		enter_callable.call()
