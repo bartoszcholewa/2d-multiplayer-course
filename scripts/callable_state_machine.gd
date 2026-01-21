@@ -1,7 +1,7 @@
 class_name CallableStateMachine
 
 var state_dictionary: Dictionary = {}
-var current_state: String
+var current_state: StringName
 
 
 func add_states(
@@ -38,7 +38,7 @@ func change_state(state_callable: Callable) -> void:
 		push_warning("No state with name " + state_name)
 
 
-func _set_state(state_name: String) -> void:
+func _set_state(state_name: StringName) -> void:
 	if current_state:
 		var exit_callable: Callable = state_dictionary[current_state].exit
 		if !exit_callable.is_null():

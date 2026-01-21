@@ -15,41 +15,49 @@ var default_collision_layer: int
 var default_collision_mask: int
 var alert_tween: Tween
 
-func _ready() -> void:
+var current_state: StringName:
+	get:
+		return state_machine.current_state
+	set(value):
+		var state: Callable = Callable.create(self, value)
+		state_machine.change_state(state)
 
-	#region Registering enemy states
-	# Spawning state
-	state_machine.add_states(
-		normal_state_spawn,
-		enter_state_spawn,
-		exit_state_spawn,
-	)
 
-	# Follow target state
-	state_machine.add_states(
-		normal_state_follow,
-		enter_state_follow,
-		exit_state_follow,
-	)
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_SCENE_INSTANTIATED:
+		#region Registering enemy states
+		# Spawning state
+		state_machine.add_states(
+			normal_state_spawn,
+			enter_state_spawn,
+			exit_state_spawn,
+		)
 
-	# Charge Attack state
-	state_machine.add_states(
-		normal_state_charge_attack,
-		enter_state_charge_attack,
-		exit_state_charge_attack,
-	)
+		# Follow target state
+		state_machine.add_states(
+			normal_state_follow,
+			enter_state_follow,
+			exit_state_follow,
+		)
 
-	# Attack State
-	state_machine.add_states(
-		normal_state_attack,
-		enter_state_attack,
-		exit_state_attack,
-	)
+		# Charge Attack state
+		state_machine.add_states(
+			normal_state_charge_attack,
+			enter_state_charge_attack,
+			exit_state_charge_attack,
+		)
 
-	# Setting initial state as spawning
-	state_machine.set_initial_state(normal_state_spawn)
+		# Attack State
+		state_machine.add_states(
+			normal_state_attack,
+			enter_state_attack,
+			exit_state_attack,
+		)
+
 	#endregion
 
+
+func _ready() -> void:
 	# Initial visual setup
 	default_collision_layer = collision_layer
 	default_collision_mask = collision_mask
@@ -58,6 +66,9 @@ func _ready() -> void:
 
 	if is_multiplayer_authority():
 		health_component.died.connect(_on_died)
+
+		# Setting initial state as spawning
+		state_machine.set_initial_state(normal_state_spawn)
 
 
 func _process(_delta: float) -> void:
@@ -127,6 +138,7 @@ func normal_state_charge_attack() -> void:
 		velocity = velocity.lerp(Vector2.ZERO, 1.0 - exp(-15 * get_process_delta_time()))
 		if charge_attack_timer.is_stopped():
 			state_machine.change_state(normal_state_attack)
+	flip()
 
 
 func exit_state_charge_attack() -> void:
