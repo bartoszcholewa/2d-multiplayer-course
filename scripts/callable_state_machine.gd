@@ -27,7 +27,6 @@ func set_initial_state(state_callable: Callable) -> void:
 func update() -> void:
 	if current_state != null:
 		var normal_state: Callable = state_dictionary[current_state].normal
-		print("Calling ", normal_state.get_method())
 		normal_state.call()
 
 

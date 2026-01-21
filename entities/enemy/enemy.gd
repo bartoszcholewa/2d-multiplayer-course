@@ -4,29 +4,53 @@ extends CharacterBody2D
 @onready var target_acquisition_timer: Timer = $TargetAcquisitionTimer
 @onready var health_component: HealthComponent = $HealthComponent
 @onready var visuals: Node2D = $Visuals
+@onready var attack_cooldown_timer: Timer = $AttackCooldownTimer
+@onready var charge_attack_timer: Timer = $ChargeAttackTimer
+@onready var hitbox_collision_shape: CollisionShape2D = %HitboxCollisionShape
 
 var target_position: Vector2
 var state_machine: CallableStateMachine = CallableStateMachine.new()
+var default_collision_layer: int
+var default_collision_mask: int
 
 func _ready() -> void:
-	# Spawning states
+
+	#region Registering enemy states
+	# Spawning state
 	state_machine.add_states(
 		normal_state_spawn,
 		enter_state_spawn,
 		exit_state_spawn,
 	)
 
-	# Follow player state
+	# Follow target state
 	state_machine.add_states(
 		normal_state_follow,
 		enter_state_follow,
 		exit_state_follow,
 	)
 
+	# Charge Attack state
+	state_machine.add_states(
+		normal_state_charge_attack,
+		enter_state_charge_attack,
+		exit_state_charge_attack,
+	)
+
+	# Attack State
+	state_machine.add_states(
+		normal_state_attack,
+		enter_state_attack,
+		exit_state_attack,
+	)
+
 	# Setting initial state as spawning
 	state_machine.set_initial_state(normal_state_spawn)
+	#endregion
 
-	target_acquisition_timer.timeout.connect(_on_target_acqusition_timer_timeout)
+	default_collision_layer = collision_layer
+	default_collision_mask = collision_mask
+	hitbox_collision_shape.disabled = true
 
 	if is_multiplayer_authority():
 		health_component.died.connect(_on_died)
@@ -34,6 +58,9 @@ func _ready() -> void:
 
 func _process(_delta: float) -> void:
 	state_machine.update()
+
+	if is_multiplayer_authority():
+		move_and_slide()
 
 
 #region Enemy States
@@ -60,17 +87,60 @@ func exit_state_spawn() -> void:
 func enter_state_follow() -> void:
 	if is_multiplayer_authority():
 		acquire_target()
+		target_acquisition_timer.start()
 
 func normal_state_follow() -> void:
 	if is_multiplayer_authority():
 		velocity = global_position.direction_to(target_position) * 40
-		move_and_slide()
-	flip()
 
+		if target_acquisition_timer.is_stopped():
+			acquire_target()
+			target_acquisition_timer.start()
+
+		if attack_cooldown_timer.is_stopped() and global_position.distance_to(target_position) < 150:
+			state_machine.change_state(normal_state_charge_attack)
+
+	flip()
 
 func exit_state_follow() -> void:
 	pass
 #endregion
+
+#region Charge Attack State
+func enter_state_charge_attack() -> void:
+	acquire_target()
+	charge_attack_timer.start()
+
+func normal_state_charge_attack() -> void:
+	if is_multiplayer_authority():
+		velocity = velocity.lerp(Vector2.ZERO, 1.0 - exp(-15 * get_process_delta_time()))
+		if charge_attack_timer.is_stopped():
+			state_machine.change_state(normal_state_attack)
+
+func exit_state_charge_attack() -> void:
+	pass
+#endregion
+
+#region Attack State
+func enter_state_attack() -> void:
+	if is_multiplayer_authority():
+		collision_layer = 0
+		collision_mask = 1 << 0
+		hitbox_collision_shape.disabled = false
+		velocity = global_position.direction_to(target_position) * 400
+
+func normal_state_attack() -> void:
+	if is_multiplayer_authority():
+		velocity = velocity.lerp(Vector2.ZERO, 1.0 - exp(-3 * get_process_delta_time()))
+		if velocity.length() < 25:
+			state_machine.change_state(normal_state_follow)
+
+func exit_state_attack() -> void:
+	if is_multiplayer_authority():
+		collision_layer = default_collision_layer
+		collision_mask = default_collision_mask
+		hitbox_collision_shape.disabled = true
+		attack_cooldown_timer.start()
 
 #endregion
 
@@ -103,10 +173,6 @@ func acquire_target() -> void:
 
 	if nearest_player != null:
 		target_position = nearest_player.global_position
-
-func _on_target_acqusition_timer_timeout() -> void:
-	if is_multiplayer_authority():
-		acquire_target()
 
 func _on_died() -> void:
 	GameEvents.emit_enemy_died()
