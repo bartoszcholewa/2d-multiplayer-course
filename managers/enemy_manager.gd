@@ -2,6 +2,7 @@ class_name EnemyManager
 extends Node
 
 signal round_changed(round_number: int)
+signal round_completed
 
 const ENEMY_SCENE: PackedScene = preload("uid://c7u2ej7yguwy6")
 const ROUND_BASE_TIME: int = 10
@@ -84,7 +85,7 @@ func check_round_completed() -> void:
 		return
 
 	if spawned_enemies == 0:
-		print("round %d completed" % round_count)
+		round_completed.emit()
 		begin_round()
 
 
