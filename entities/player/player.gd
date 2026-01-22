@@ -3,6 +3,10 @@ extends CharacterBody2D
 
 signal died
 
+const MUZZLE_FLASH_SCENE: PackedScene = preload("uid://c6m3fw1r3jknr")
+const BULLET_SCENE: PackedScene = preload("uid://ci3xnymrb32hv")
+const BULLET_SHELL_EFFECT_SCENE: PackedScene = preload("uid://tqaevjx7awih")
+
 @onready var player_input_synchronizer_component: PlayerInputSynchronizerComponent = $PlayerInputSynchronizerComponent
 @onready var weapon_root: Node2D = $Visuals/WeaponRoot
 @onready var fire_rate_timer: Timer = $FireRateTimer
@@ -12,9 +16,8 @@ signal died
 @onready var barrel_position: Marker2D = %BarrelPosition
 @onready var shell_position: Marker2D = %ShellPosition
 
-const MUZZLE_FLASH_SCENE: PackedScene = preload("uid://c6m3fw1r3jknr")
-const BULLET_SCENE: PackedScene = preload("uid://ci3xnymrb32hv")
-const BULLET_SHELL_EFFECT_SCENE: PackedScene = preload("uid://tqaevjx7awih")
+var is_dying: bool
+
 
 
 var input_multiplayer_authority: int
@@ -33,6 +36,13 @@ func _process(_delta: float) -> void:
 
 	# Move players only from the server
 	if is_multiplayer_authority():
+
+		# If player is dying, hide the body off screen and cut out any inputs
+		# TODO: Can we replace player sprite with thumbstone?
+		if is_dying:
+			global_position = Vector2.RIGHT * 1000
+			return
+
 		velocity = player_input_synchronizer_component.movement_vector * 100
 		move_and_slide()
 		if player_input_synchronizer_component.is_attack_pressed:
@@ -85,6 +95,19 @@ func play_fire_effects() -> void:
 	bullet_shell.scale = Vector2.ONE if aim_vector.x >= 0 else Vector2(1, -1)
 	get_parent().add_child(bullet_shell)
 
+
+@rpc("authority", "call_local", "reliable")
+func kill() -> void:
+	is_dying = true
+	# Disable Multiplayer Synchronizer to stop broadcasting inputs from dead player
+	player_input_synchronizer_component.public_visibility = false
+
+
 func _on_died() -> void:
+	kill.rpc()
+
+	# Sleep awhile before removing player node for other pending signals to finish
+	await get_tree().create_timer(0.5).timeout
+
 	died.emit()
 	queue_free()
