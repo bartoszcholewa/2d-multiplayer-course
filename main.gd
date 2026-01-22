@@ -8,6 +8,7 @@ const MAIN_MENU_SCENE_PATH: String = "res://ui/main_menu/main_menu.tscn"
 @onready var enemy_manager: EnemyManager = $EnemyManager
 
 var dead_peers: Array[int] = []
+var player_dictionary: Dictionary[int, Player] = {}
 
 
 func _ready() -> void:
@@ -16,6 +17,9 @@ func _ready() -> void:
 	peer_ready.rpc_id(1)
 	enemy_manager.round_completed.connect(_on_round_completed)
 	multiplayer.server_disconnected.connect(_on_server_disconnected)
+
+	if is_multiplayer_authority():
+		multiplayer.peer_disconnected.connect(_on_peer_disconnected)
 
 
 func _spawn_player(data: Dictionary) -> Player:
@@ -28,6 +32,8 @@ func _spawn_player(data: Dictionary) -> Player:
 	if is_multiplayer_authority():
 		player_instance.died.connect(_on_player_died.bind(peer_id))
 
+	player_dictionary[peer_id] = player_instance
+
 	return player_instance
 
 
@@ -39,7 +45,10 @@ func peer_ready() -> void:
 
 
 func respawn_dead_peers() -> void:
+	var all_peers: PackedInt32Array = get_all_peers()
 	for peer_id: int in dead_peers:
+		if not all_peers.has(peer_id):
+			continue
 		multiplayer_spawner.spawn({"peer_id": peer_id})
 	dead_peers.clear()
 
@@ -55,11 +64,8 @@ func end_game() -> void:
 func check_game_over() -> void:
 	var is_game_over: bool = true
 
-	# Get all peers ids including the server (1)
-	var all_peers: PackedInt32Array = multiplayer.get_peers()
-	all_peers.push_back(multiplayer.get_unique_id())
 
-	for peer_id: int in all_peers:
+	for peer_id: int in get_all_peers():
 		if not dead_peers.has(peer_id):
 			is_game_over = false
 			break
@@ -67,6 +73,14 @@ func check_game_over() -> void:
 	if is_game_over:
 		# Terminate the server and peers and load main menu
 		end_game()
+
+
+func get_all_peers() -> PackedInt32Array:
+	# Get all peers ids including the server (1)
+	var all_peers: PackedInt32Array = multiplayer.get_peers()
+	all_peers.push_back(multiplayer.get_unique_id())
+	return all_peers
+
 
 
 func _on_player_died(peer_id: int) -> void:
@@ -78,3 +92,10 @@ func _on_round_completed() -> void:
 
 func _on_server_disconnected() -> void:
 	end_game()
+
+func _on_peer_disconnected(peer_id: int) -> void:
+	if player_dictionary.has(peer_id):
+		var player: Player = player_dictionary[peer_id]
+		if is_instance_valid(player):
+			player_dictionary[peer_id].kill()
+		player_dictionary.erase(peer_id)

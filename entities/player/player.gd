@@ -96,18 +96,26 @@ func play_fire_effects() -> void:
 	get_parent().add_child(bullet_shell)
 
 
-@rpc("authority", "call_local", "reliable")
 func kill() -> void:
-	is_dying = true
-	# Disable Multiplayer Synchronizer to stop broadcasting inputs from dead player
-	player_input_synchronizer_component.public_visibility = false
+	if not is_multiplayer_authority():
+		push_error("Cannot call kill on non-server client")
+		return
 
-
-func _on_died() -> void:
-	kill.rpc()
+	_kill.rpc()
 
 	# Sleep awhile before removing player node for other pending signals to finish
 	await get_tree().create_timer(0.5).timeout
 
 	died.emit()
 	queue_free()
+
+
+@rpc("authority", "call_local", "reliable")
+func _kill() -> void:
+	is_dying = true
+	# Disable Multiplayer Synchronizer to stop broadcasting inputs from dead player
+	player_input_synchronizer_component.public_visibility = false
+
+
+func _on_died() -> void:
+	kill()
