@@ -4,15 +4,13 @@
 [ext_resource type="Texture2D" uid="uid://epmcpedhxh18" path="res://assets/arena.png" id="2_0xm2m"]
 [ext_resource type="PackedScene" uid="uid://cgvh1jdfst1hv" path="res://ui/game_ui/game_ui.tscn" id="3_1bvp3"]
 [ext_resource type="PackedScene" uid="uid://dpu1bcx3ypbmd" path="res://managers/enemy_manager.tscn" id="3_h2yge"]
+[ext_resource type="Texture2D" uid="uid://wcsnhm5p83vh" path="res://assets/clip_mask.png" id="5_lquwl"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_0xm2m"]
 size = Vector2(32, 300)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_h2yge"]
 size = Vector2(500, 32)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_h2yge"]
-polygon = PackedVector2Array(96, 307, 550, 306, 550, 329, 95, 329)
 
 [node name="Main" type="Node"]
 script = ExtResource("1_ig7tw")
@@ -81,11 +79,15 @@ collision_mask = 0
 shape = SubResource("RectangleShape2D_h2yge")
 metadata/_edit_lock_ = true
 
-[node name="YSortRoot" type="Node2D" parent="."]
-y_sort_enabled = true
+[node name="BackgroundEffects" type="Node2D" parent="."]
+
+[node name="BackgroundMask" type="Sprite2D" parent="BackgroundEffects"]
+unique_name_in_owner = true
+clip_children = 1
+position = Vector2(320, 180)
+texture = ExtResource("5_lquwl")
 metadata/_edit_lock_ = true
 
-[node name="LightOccluder2D" type="LightOccluder2D" parent="."]
-occluder = SubResource("OccluderPolygon2D_h2yge")
-occluder_light_mask = 0
+[node name="YSortRoot" type="Node2D" parent="."]
+y_sort_enabled = true
 metadata/_edit_lock_ = true

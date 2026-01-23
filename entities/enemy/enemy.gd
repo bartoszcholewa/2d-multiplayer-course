@@ -2,6 +2,7 @@ class_name Enemy
 extends CharacterBody2D
 
 const ENEMY_IMPACT_PARTICLES_SCENE: PackedScene = preload("uid://cqcbxw57730wx")
+const ENEMY_GROUND_PARTICLES_SCENE: PackedScene = preload("uid://0w3n6i32aq2t")
 
 @onready var target_acquisition_timer: Timer = $TargetAcquisitionTimer
 @onready var health_component: HealthComponent = $HealthComponent
@@ -212,7 +213,20 @@ func spawn_hit_particles() -> void:
 	get_parent().add_child(hit_particles_instance)
 
 
+@rpc("authority", "call_local", "unreliable")
+func spawn_death_particles() -> void:
+	var groud_particles_instance: Node2D = ENEMY_GROUND_PARTICLES_SCENE.instantiate()
+
+
+	var background_node: Node = Main.background_mask
+	if not is_instance_valid(background_node):
+		background_node = get_parent()
+	background_node.add_child(groud_particles_instance)
+	groud_particles_instance.global_position = global_position
+
+
 func _on_died() -> void:
+	spawn_death_particles.rpc()
 	GameEvents.emit_enemy_died()
 	queue_free()
 
