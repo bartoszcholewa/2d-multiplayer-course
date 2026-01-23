@@ -1,6 +1,8 @@
 class_name Enemy
 extends CharacterBody2D
 
+const ENEMY_IMPACT_PARTICLES_SCENE: PackedScene = preload("uid://cqcbxw57730wx")
+
 @onready var target_acquisition_timer: Timer = $TargetAcquisitionTimer
 @onready var health_component: HealthComponent = $HealthComponent
 @onready var visuals: Node2D = $Visuals
@@ -8,6 +10,7 @@ extends CharacterBody2D
 @onready var charge_attack_timer: Timer = $ChargeAttackTimer
 @onready var hitbox_collision_shape: CollisionShape2D = %HitboxCollisionShape
 @onready var alert_sprite: Sprite2D = $AlertSprite
+@onready var hurtbox_component: HurtboxComponent = $HurtboxComponent
 
 var target_position: Vector2
 var state_machine: CallableStateMachine = CallableStateMachine.new()
@@ -66,9 +69,12 @@ func _ready() -> void:
 
 	if is_multiplayer_authority():
 		health_component.died.connect(_on_died)
+		hurtbox_component.hit_by_hitbox.connect(_on_hit_by_hitbox)
 
 		# Setting initial state as spawning
 		state_machine.set_initial_state(normal_state_spawn)
+
+
 
 
 func _process(_delta: float) -> void:
@@ -198,6 +204,14 @@ func acquire_target() -> void:
 	if nearest_player != null:
 		target_position = nearest_player.global_position
 
+
+@rpc("authority", "call_local", "unreliable")
+func spawn_hit_particles() -> void:
+	var hit_particles_instance: Node2D = ENEMY_IMPACT_PARTICLES_SCENE.instantiate()
+	hit_particles_instance.global_position = hurtbox_component.global_position
+	get_parent().add_child(hit_particles_instance)
+
+
 func _on_died() -> void:
 	GameEvents.emit_enemy_died()
 	queue_free()
@@ -206,3 +220,7 @@ func _reset_aletr_tween() -> void:
 	if alert_tween and alert_tween.is_valid():
 		alert_tween.kill()
 	alert_tween = create_tween()
+
+
+func _on_hit_by_hitbox() -> void:
+	spawn_hit_particles.rpc()
