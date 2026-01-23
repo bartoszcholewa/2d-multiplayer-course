@@ -95,6 +95,10 @@ func play_fire_effects() -> void:
 	bullet_shell.scale = Vector2.ONE if aim_vector.x >= 0 else Vector2(1, -1)
 	get_parent().add_child(bullet_shell)
 
+	# Camera shake
+	if player_input_synchronizer_component.is_multiplayer_authority():
+		GameCamera.shake(1)
+
 
 func kill() -> void:
 	if not is_multiplayer_authority():
